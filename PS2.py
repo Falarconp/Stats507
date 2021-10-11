@@ -1,12 +1,12 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,py:light
+#     formats: ipynb,py
 #     text_representation:
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.12.0
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -19,6 +19,7 @@ from numpy.random import randint
 import requests
 import io
 import timeit
+from pprint import pprint
 
 # # Question 0 - Code review warmup
 
@@ -37,11 +38,15 @@ import timeit
 
 # -
 
-# The code takes a list of tuples and collects the ones with the same first and fourth element in a list. Finally it retunrs them sorted by the 4th element in the tuple. 
+# The code takes a list of tuples and collects the ones with the same first and fourth element in a list. Finally it returns the tuple with the largest 4th element in the tuple among the ones with a common 1st element.
 #
-# The syntax  of the code can be improved as the number of comparison it makes are more than neccessary. Just one iteration or using smart indexing. The  style of the snippet is ok in some parts, but in others the variable's names do not provide significant meaning as "li" or "op". What those variables are supposed to mean or contain is not really clear. More meaningful and clear names could be used.
+# The syntax  of the code can be improved as the number of comparisons it makes are much more than the necessary ones. Some smart indexing can avoid many of the comparison; farther the two nested loops are not necessary. Some comparisons are repated several times, which can be avoided by a previous sorting or ignoring comparisosn that were already made.
 #
-# The code does not really work because it compares the 4th element of the tuples, but the tuples only have 3 elements, therefore the comparison does not have a real meaning.
+# The  style of the snippet is ok in some parts, but in other parts the variables' names do not provide significant meaning, as "li" or "op". What those variables are supposed to contain is not really clear. More meaningful and clear names could be used.
+#
+# The code does not really work because it compares the 4th element of the tuples, but the tuples only have 3 elements, therefore the comparison will not work in tuples of that size.
+#
+# Overall, the syntax of the code can definitely be improves, and even if the code works with larger tuples is very inefficient.
 #
 
 # # Question 1 - List of Tuples
@@ -175,6 +180,7 @@ df["Time scratch_sort"] = str_t_scratch
 
 
 display(df)
+#print(df.to_markdown())
 # -
 
 # # Question 3
