@@ -1,73 +1,76 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py:light,md
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.13.0
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
+---
+jupyter:
+  jupytext:
+    formats: ipynb,py:light,md
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.13.0
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
 
-# # Question 0 - Markdown warmup
+# Question 0 - Markdown warmup
 
-# This is *question 0* for problem set 1 of Stats 507.
-#
-# > Question 0 is about Markdown
-#
-# The next question is about the **Fibonacci sequence**, $F_n = F_{n-2} + F_{n-1}$. In part **a** we will define a Python function `fib_rec()`.
-#
-# Below is a ...
-#
-# ### Level 3 header
-#
-# Next, we can make a bulleted list:
-#
-# - Item 1
-#     - detail 1
-#     - detail 2
-# - Item 2
-#
-# Finally we can make an enumerated list:
-#
-#     a. Item 1
-#     b. Item 2
-#     c. Item 3
 
-# ```
-#
-# This is *question 0* for problem set 1 of Stats 507.
-#
-# > Question 0 is about Markdown
-#
-# The next question is about the **Fibonacci sequence**, $F_n = F_{n-2} + F_{n-1}$. In part **a** we will define a Python function `fib_rec()`.
-#
-# Below is a ...
-#
-# ### Level 3 header
-#
-# Next, we can make a bulleted list:
-#
-# - Item 1
-#     - detail 1
-#     - detail 2
-# - Item 2
-#
-# Finally we can make an enumerated list:
-#
-#     a. Item 1
-#     b. Item 2
-#     c. Item 3
-#   
-# ```
+This is *question 0* for problem set 1 of Stats 507.
 
-# # Question 1 - Fibonnaci Sequence
+> Question 0 is about Markdown
 
-# +
+The next question is about the **Fibonacci sequence**, $F_n = F_{n-2} + F_{n-1}$. In part **a** we will define a Python function `fib_rec()`.
+
+Below is a ...
+
+### Level 3 header
+
+Next, we can make a bulleted list:
+
+- Item 1
+    - detail 1
+    - detail 2
+- Item 2
+
+Finally we can make an enumerated list:
+
+    a. Item 1
+    b. Item 2
+    c. Item 3
+
+
+```
+
+This is *question 0* for problem set 1 of Stats 507.
+
+> Question 0 is about Markdown
+
+The next question is about the **Fibonacci sequence**, $F_n = F_{n-2} + F_{n-1}$. In part **a** we will define a Python function `fib_rec()`.
+
+Below is a ...
+
+### Level 3 header
+
+Next, we can make a bulleted list:
+
+- Item 1
+    - detail 1
+    - detail 2
+- Item 2
+
+Finally we can make an enumerated list:
+
+    a. Item 1
+    b. Item 2
+    c. Item 3
+  
+```
+
+
+# Question 1 - Fibonnaci Sequence
+
+```python
 import numpy as np
 import timeit
 import pandas as pd
@@ -236,9 +239,10 @@ def fib_flr(n, a=0, b=1):
     
 test_func(fib_flr)
 
+```
 
 
-# +
+```python
 setup = '''
 import numpy as np
 
@@ -360,9 +364,10 @@ for i in range(number_n):
     times[4,i] = np.median(np.array(timeit.repeat("fib_flr("+str(n)+")",
                                  setup,repeat=10,number=iters)))/iters
 
+```
 
 
-# +
+```python
 index_names = [str(i) for i in ns]
 column_names = ["Time fib_rec()  [$\mu$sec]","Time fib_for()  [$\mu$sec]",
                "Time fib_whl()  [$\mu$sec]","Time fib_rnd()  [$\mu$sec]",
@@ -375,11 +380,11 @@ s = np.linspace(2,40,number_n,dtype=int)
 
 display(df)
 #print(df.to_markdown())
-# -
+```
 
-# # Question 2 - Pascal's Triangle
+# Question 2 - Pascal's Triangle
 
-# +
+```python
 def Pascal_row_n(n):
     """
      Calculates the n-th row of Pascal's triangle
@@ -412,15 +417,15 @@ def Print_Pascal_triangle(n,spacing=5):
             line += " "*spacing
         print(line+"\n")
     return
+```
 
-
-# -
-
+```python
 Print_Pascal_triangle(10)
+```
 
-# # Question 3 - Statistics 101
+# Question 3 - Statistics 101
 
-# +
+```python
 from scipy.stats import norm, binom, beta
 import warnings
 
@@ -523,14 +528,15 @@ def compute_Bin(array,CI=0.95, method="NA",
         return output
     else:
         return string
+```
 
-
-# +
+```python
 x = np.random.random(100)
 
 print(compute_statistics(x, 0.1))
+```
 
-# +
+```python
 array = np.concatenate([np.zeros(48),np.ones(42)])
 np.random.shuffle(array)
 
@@ -549,13 +555,19 @@ for ci in CIs:
     
 
 
-# -
+```
 
+```python
 display(df.style.hide_index())
 #print(df.to_markdown(index=False))
+```
 
+```python
 df["Minimum width"] = ["Agresti-Coull","Normal/AgrestiCoull","Agresti-Coull"]
 display(df.style.hide_index())
 #print(df.to_markdown(index=False))
+```
 
+```python
 
+```
