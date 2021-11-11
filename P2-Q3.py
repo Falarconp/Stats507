@@ -23,14 +23,14 @@ import timeit
 
 columns_demo = ["SEQN","RIDAGEYR","RIDRETH3","DMDEDUC2",
                 "DMDMARTL","RIDSTATR","SDMVPSU","WTMEC2YR",
-                "WTINT2YR"]
+                "WTINT2YR","RIAGENDR"]
 
 columns_demo_new = ["id", "age", "race", "education",
                     "marital status", "exam status", 
                    "pseudo-psu masked var", 
-                   "2yr exam weight", "2yr interview weight"]
+                   "2yr exam weight", "2yr interview weight", "gender"]
 
-dtypes = [int, int, int, int, int, int, int, float, float]
+dtypes = [int, int, int, int, int, int, int, float, float, int]
 
 rename_cols = dict(zip(columns_demo, columns_demo_new))
 data_types = dict(zip(columns_demo_new, dtypes))
@@ -55,6 +55,7 @@ demo_data.dropna(inplace=True)
 demo_data.rename(columns=rename_cols, inplace=True)
 #Change data types.
 demo_data = demo_data.astype(data_types)
+demo_data["gender"] = pd.Categorical(np.where(demo_data.gender > 1.0,"female","male"))
 
 pd.to_pickle(oral_data,'./Demo_data_2011_2018.p')
 
