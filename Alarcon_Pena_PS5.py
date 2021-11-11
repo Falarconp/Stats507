@@ -21,7 +21,6 @@ import statsmodels.api as sm
 from os.path import exists
 import statsmodels.formula.api as smf
 from patsy import dmatrix
-from scipy.integrate import simps
 
 
 # +
@@ -230,34 +229,31 @@ for i in range(sum(mask1)):
                                         1,0))
     df = df.dropna()
     df[col_str] = df[col_str].astype(int)
+    
+
+df_avg = df.groupby("age").apply(np.mean)
 
 # +
-# sm.Logit?
-# -
-
-res_b1
-
-# +
-basis_1 = dmatrix("bs(x, df=4, degree=2)", {"x": df.age})
-modt10_b1 = sm.Logit(df.tooth_10_C, basis_1)
+basis_1 = dmatrix("bs(x , knots=[16,24,60], df=6, degree=3)", {"x": df_avg.age})
+modt10_b1 = sm.OLS(df_avg.tooth_10_C, basis_1)
 res_b1 = modt10_b1.fit()
 res_b1.summary()
 
 
-basis_2 = dmatrix("bs(x, df=4, degree=2)", {"x": df.age})
-modt10_b2 = sm.Logit(df.tooth_10_C, basis_2)
+basis_2 = dmatrix("bs(x, knots=[21,30,45], df=6, degree=3)", {"x": df_avg.age})
+modt10_b2 = sm.OLS(df_avg.tooth_10_C, basis_2)
 res_b2 = modt10_b2.fit()
 res_b2.summary()
 
 
-basis_3 = dmatrix("bs(x, df=4, degree=3)", {"x": df.age})
-modt10_b3 = sm.Logit(df.tooth_10_C, basis_3)
+basis_3 = dmatrix("bs(x, knots=[20,40,50],  df=6, degree=3)", {"x": df_avg.age})
+modt10_b3 = sm.OLS(df_avg.tooth_10_C, basis_3)
 res_b3 = modt10_b3.fit()
 res_b3.summary()
 
 
-basis_4 = dmatrix("bs(x, df=4, degree=4)", {"x": df.age})
-modt10_b4 = sm.Logit(df.tooth_10_C, basis_4)
+basis_4 = dmatrix("bs(x, knots=[16,41,55], df=6, degree=3)", {"x": df_avg.age})
+modt10_b4 = sm.OLS(df_avg.tooth_10_C, basis_4)
 res_b4 = modt10_b4.fit()
 res_b4.summary()
 
@@ -275,21 +271,23 @@ print("AIC Basis Set 4 "+str(res_b4.aic))
 
 # -
 
-# The best Basis is the with degree=1 and 4 degress of freedom. That Basis has the lowest AIC value.
+# The best Basis is the one with the knots at 16, 41 and 55 years with degree=3. That Basis has the lowest AIC value.
 
-def fit_tooth(array):
+def fit_tooth(array, df=df_avg, basis="bs(x, knots=[16,41,55], df=6, degree=3)" ):
     """
     Uses a B-Spline basis to fit the probability distribution of having a compelte tooth.
     Input:
     -----
     array: Array with binomial representation of population having or not having a given tooth.
+    df: DataFrame with ages and probability for each tooth at each age.
+    basis: Spline to be input in the dmatrix function.
     
     Output:
     --------
     Returns the coefficients of the linear combination of the basis of the Spline.
     """
-    basis = dmatrix("bs(x, df=4, degree=2)", {"x": df.age})
-    modt = sm.Logit(array, basis)
+    basis = dmatrix(basis, {"x": df.age})
+    modt = sm.OLS(array, basis)
     res = modt.fit()
     return res.params
 
@@ -297,13 +295,9 @@ def fit_tooth(array):
 # +
 #We added the fitted values to the DataFrame as rows for a given tooth.
 
-df2 = df.append(df.iloc[:,3:35].agg(fit_tooth), ignore_index = True)
-Probabilities = np.dot(basis_2,df2.iloc[-5:,3:35])
+df2 = df_avg.append(df_avg.iloc[:,3:35].agg(fit_tooth), ignore_index = True)
+prob = np.dot(basis_2,df2.iloc[-7:,3:35])
 
-
-#ages, ind, counts = np.unique(df.age, return_index=True, return_counts=True)
-#prob = Probabilities[ind,:]/simps(Probabilities[ind,:], ages, axis=0)
-#prob = Probabilities[ind,:]/counts
 
 # +
 fig, axs = plt.subplots(2, 4, figsize=(15,7))
@@ -316,11 +310,13 @@ index_up_molar = np.array([1,2,3,14,15,16])
 
 index_low_inc = np.array([23,24,25,26])
 index_low_can = np.array([22,27])
-index_low_premol = np.array([17,18,19,30,31,32])
-index_low_molar = np.array([20,21,28,29])
+index_low_premol = np.array([20,21,28,29])
+index_low_molar = np.array([17,18,19,30,31,32])
 
 indices = np.array([[index_up_inc,index_up_can,index_up_premol,index_up_molar],
                     [index_low_inc,index_low_can,index_low_premol,index_low_molar]])
+
+colors = ["red", "blue", "gold", "green", "black", "magenta"]
         
 
 for i in range(2):
@@ -328,32 +324,96 @@ for i in range(2):
     for j in range(4):
         labels = ["tooth "+str(i) for i in indices[i,j]]
         for k in range(len(indices[i,j])):
-            axs[i,j].plot(df.iloc[ind].age, prob[:, indices[i,j][k]-1], label=labels[k])
+            axs[i,j].plot(df_avg.age, prob[:, indices[i,j][k]-1], label=labels[k], c=colors[k])
+            axs[i,j].scatter(df_avg.age, df_avg.iloc[:,indices[i,j][k]+2], alpha=0.15,
+                             marker=".", c=colors[k])
         axs[i,j].set_ylim(bottom=0)
-        axs[i,j].legend(ncol=2)
+        axs[i,j].legend(ncol=2, framealpha=0.3)
         axs[1,j].set_xlabel("Age (yr)")
 
 
 plt.tight_layout()
+
+
 # -
 
-# **Figure 1**: Probability of having a given tooth as a function of age. Each column represetn a different type of tooth. From left to right: Incisors, canines, premolars and molars. The top row is for the upper teeth and the bottom row for lower teeth.
-
-plt.plot(age_decils,emp_decils)
-plt.plot(df.iloc[ind].age,prob[:,9]/prob[:,9].max())
-
-# +
-empirical = np.zeros(ages.shape)
-for i in range(len(ages)):
-    aux[i] = df.query("tooth_10_C == 1").query("age=="+str(ages[i])).shape[0]/counts[i]
-    
-age_decils = np.array([0,10,20,30,33,40,45,50,60,70,77])
-emp_decils = np.zeros(11)
-for i in range(1,11):
-    count_decil = df.query(str(age_decils[i-1])+"<age<"+str(age_decils[i])).shape[0]
-    emp_decils[i] = df.query("tooth_10_C == 1").query(str(age_decils[i-1])+"<age<"+str(age_decils[i])).shape[0]/count_decil
-    
-    
-# -
+# **Figure 1**: Probability of having a given tooth as a function of age. Each column represetn a different type of tooth. From left to right: Incisors, canines, premolars and molars. The top row is for the upper teeth and the bottom row for lower teeth. Circles represented the observed probabilities form the data while solid lines the Splines fit.
 
 # # Question 2 - Hosmer-Lemeshow Calibration Plot
+
+# ### a)
+
+# +
+def getting_deciles(cdf_array):
+    """
+    Get the closest indices to the deciles given an array cdf-like.
+    Input:
+    ------
+    cdf_array: Sorted array from 0 to 1, as a cdf.
+    
+    Output:
+    ------
+    decils_ind: array with the indices closes to the deciles.
+    """
+    decils_probs = np.linspace(0,1,11)
+    ind_dec = np.array([np.argmin(np.abs(decil-cdf_array)) for decil in decils_probs])
+    return ind_dec
+
+
+
+
+ages, counts = np.unique(df.age, return_counts=True)
+total = counts.sum()
+expected_cases = prob[:,9]*counts
+sort_prob_ind = np.argsort(prob[:,9])
+sort_prob = prob[sort_prob_ind]
+
+#compute some sort of cdf.
+e_cdf = np.zeros(ages.size)
+e_cdf[0] = counts[sort_prob_ind[0]]/total
+for i in range(1,ages.size):
+    e_cdf[i] = counts[sort_prob_ind[i]]/total + e_cdf[i-1]
+    
+#decil indices
+ind_dec = getting_deciles(e_cdf)
+
+# -
+
+# ### b)
+
+# +
+expected_prob = np.zeros(10)
+observed_prob = np.zeros(10)
+
+for i in range(10):
+    ages_decil = df2.age[sort_prob_ind[ind_dec[i]:ind_dec[i+1]]]
+    count_aux = 0
+    for j in range(ages_decil.size):
+        str_age = str(ages_decil.iloc[j])
+        count_age = df.query("age == "+str_age).tooth_10_C.size
+        observed_prob[i] += df.query("age == "+str_age).tooth_10_C.mean()*count_age
+        expected_prob[i] += prob[sort_prob_ind[[ind_dec[i]+j]],9]*count_age
+        count_aux += count_age
+    observed_prob[i] /= count_aux 
+    expected_prob[i] /= count_aux
+        
+# -
+
+# ### c)
+
+# +
+fig = plt.figure(figsize=(9,4))
+plt.scatter(observed_prob, expected_prob, c="k")
+plt.plot(np.linspace(0,1.,100),np.linspace(0,1.,100),'--', c="gray")
+plt.xlabel("Observed Probability")
+plt.ylabel("Expected probability")
+
+plt.xlim([0.48,1])
+plt.ylim([0.48,1])
+# -
+
+# **Figure 2:** Comparison between expected probability and observed probability for each decile group.
+
+# ### d)
+#
+# For intermediatiate probabilities, i.e. between 0.6 and 0.9, the observed probability is below the identity line, meaning that we are underpredicting the observed probability. The number of cases in that range with a permament tooth 10 is higher. For the one point at $P$=0.5 is right next to the identity line and the high probability point are clustered around the identitiy as well, which meand that the fit is working in both extremes of the observed range, Nevertheless, there is space for improvement for ages with intermediate probability.
